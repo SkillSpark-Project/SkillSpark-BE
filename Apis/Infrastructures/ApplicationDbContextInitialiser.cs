@@ -87,7 +87,7 @@ namespace Infrastructures
             }
 
             // admin users
-            var administrator = new ApplicationUser { UserName = "admin@localhost", Email = "admin@localhost", Fullname = "Admin", Avatar = "(null)", Address = "no", Birthday = DateTime.Parse("2000-01-01") };
+            var administrator = new ApplicationUser { UserName = "admin@localhost", Email = "admin@localhost", Fullname = "Admin", Avatar = "(null)", Birthday = DateTime.Parse("2000-01-01") };
 
             if (_userManager.Users.All(u => u.UserName != administrator.UserName))
             {

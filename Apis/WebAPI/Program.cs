@@ -79,7 +79,7 @@ using (var scope = app.Services.CreateScope())
     }
 
     // staff roles
-    var staffRole = new IdentityRole("Staff");
+    var staffRole = new IdentityRole("Mentor");
 
     if (_roleManager.Roles.All(r => r.Name != staffRole.Name))
     {
@@ -87,28 +87,18 @@ using (var scope = app.Services.CreateScope())
     }
 
     // customer roles
-    var customerRole = new IdentityRole("Customer");
+    var customerRole = new IdentityRole("Learner");
 
     if (_roleManager.Roles.All(r => r.Name != customerRole.Name))
     {
         await _roleManager.CreateAsync(customerRole);
     }
 
-    // sale roles
-    var saleRole = new IdentityRole("Saler");
-
-    if (_roleManager.Roles.All(r => r.Name != customerRole.Name))
-    {
-        await _roleManager.CreateAsync(customerRole);
-    }
-
-    // admin users
-    
 }
 
 using (var scope = app.Services.CreateScope())
 {
-    var administrator = new ApplicationUser { UserName = "admin@localhost", Email = "admin@localhost", Fullname = "Admin", Avatar = "(null)", Address = "no", Birthday = DateTime.Parse("2000-01-01") };
+    var administrator = new ApplicationUser { UserName = "admin@localhost", Email = "admin@localhost", Fullname = "Admin", Avatar = "(null)", Birthday = DateTime.Parse("2000-01-01") };
     var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     if (_userManager.Users.All(u => u.UserName != administrator.UserName))
     {

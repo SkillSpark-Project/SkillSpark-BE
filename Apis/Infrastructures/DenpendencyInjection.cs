@@ -5,7 +5,6 @@ using Application.Services;
 using Domain.Entities;
 using Infrastructures.Mappers;
 using Infrastructures.Repositories;
-using Infrastructures.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,12 +17,12 @@ namespace Infrastructures
     {
         public static IServiceCollection AddInfrastructuresService(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
         {
-            services.AddScoped<IChemicalService, ChemicalService>();
+            /*services.AddScoped<IChemicalService, ChemicalService>();
             services.AddScoped<IUserService, UserService>();
             
 
             services.AddScoped<IChemicalRepository, ChemicalRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();*/
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             
             

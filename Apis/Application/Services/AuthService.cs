@@ -115,7 +115,6 @@ namespace Application.Services
                 Email = model.Email,
                 Fullname = model.Fullname,
                 Avatar = model.Avatar,
-                Address = model.Address,
                 Birthday = model.Birthday,
                 PhoneNumber = model.PhoneNumber
             };
