@@ -3,6 +3,7 @@ using Application.Repositories;
 using Application.Commons;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructures.Repositories
 {
@@ -11,22 +12,26 @@ namespace Infrastructures.Repositories
         protected DbSet<TEntity> _dbSet;
         private readonly ICurrentTime _timeService;
         private readonly IClaimsService _claimsService;
+        private readonly AppDbContext _context;
 
         public GenericRepository(AppDbContext context, ICurrentTime timeService, IClaimsService claimsService)
         {
+            _context = context;
             _dbSet = context.Set<TEntity>();
             _timeService = timeService;
             _claimsService = claimsService;
         }
-        public Task<List<TEntity>> GetAllAsync() => _dbSet.ToListAsync();
+        public Task<List<TEntity>> GetAllAsync() => _dbSet.AsNoTracking().Where(x => !x.IsDeleted).ToListAsync();
+
+        public IQueryable<TEntity> GetAllQueryable() => _dbSet.Where(x => !x.IsDeleted).AsNoTracking();
+
 
         public async Task<TEntity?> GetByIdAsync(Guid id)
         {
-            var result = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+            var result = await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
             // todo should throw exception when not found
             return result;
         }
-
         public async Task AddAsync(TEntity entity)
         {
             entity.CreationDate = _timeService.GetCurrentTime();
@@ -36,6 +41,7 @@ namespace Infrastructures.Repositories
 
         public void SoftRemove(TEntity entity)
         {
+            entity.DeletionDate = _timeService.GetCurrentTime();
             entity.IsDeleted = true;
             entity.DeleteBy = _claimsService.GetCurrentUserId;
             _dbSet.Update(entity);
@@ -69,24 +75,51 @@ namespace Infrastructures.Repositories
             _dbSet.UpdateRange(entities);
         }
 
-        public async Task<Pagination<TEntity>> ToPagination(int pageIndex = 1, int pageSize = 20)
+        public async Task<int> CountAsync(Expression<Func<TEntity, bool>> expression = null)
         {
-            var itemCount = await _dbSet.CountAsync();
-            var items = await _dbSet.OrderByDescending(x => x.CreationDate)
-                                    .Skip((pageIndex-1) * pageSize)
-                                    .Take(pageSize)
-                                    .AsNoTracking()
-                                    .ToListAsync();
-            
-            var result = new Pagination<TEntity>()
+            return expression == null ? await _dbSet.CountAsync() : await _dbSet.CountAsync(expression);
+        }
+        public async Task<Pagination<TEntity>> GetAsync(Expression<Func<TEntity, bool>> expression = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null, bool isDisableTracking = true, bool isTakeAll = false, int pageSize = 0, int pageIndex = 0, List<Expression<Func<TEntity, object>>> includes = null)
+        {
+            IQueryable<TEntity> query = _dbSet;
+            var paginationResult = new Pagination<TEntity>();
+            paginationResult.PageIndex = pageIndex;
+            if (pageSize == 0)
+                paginationResult.PageSize = await CountAsync(expression);
+            else
+                paginationResult.PageSize = pageSize;
+            paginationResult.TotalItemsCount = await CountAsync(expression);
+            if (includes != null && includes.Any())
             {
-                PageIndex = pageIndex,
-                PageSize = pageSize,
-                TotalItemsCount = itemCount,
-                Items = items,
-            };
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+            if (expression != null)
+                query = query.Where(expression);
+            if (isDisableTracking is true)
+                query = query.AsNoTracking();
+            if (isTakeAll is true)
 
-            return result;
+            {
+                if (orderBy != null)
+                    paginationResult.Items = await orderBy(query).ToListAsync();
+                else
+                    paginationResult.Items = await query.ToListAsync();
+            }
+            else
+            {
+                if (pageIndex < 0 || pageSize < 0)
+                {
+                    throw new Exception("Số trang và sô lượng trong trang phải lớn hơn 0.");
+                }
+                if (orderBy == null)
+                    paginationResult.Items = await query.Skip(pageSize * pageIndex).Take(pageSize).ToListAsync();
+                else
+                    paginationResult.Items = await orderBy(query).Skip(pageIndex * pageSize).Take(pageSize).ToListAsync();
+            }
+            return paginationResult;
         }
 
         public void UpdateRange(List<TEntity> entities)
@@ -97,6 +130,11 @@ namespace Infrastructures.Repositories
                 entity.CreatedBy = _claimsService.GetCurrentUserId;
             }
             _dbSet.UpdateRange(entities);
+        }
+
+        public void HardDeleteRange(List<TEntity> entities)
+        {
+            _dbSet.RemoveRange(entities);
         }
     }
 }

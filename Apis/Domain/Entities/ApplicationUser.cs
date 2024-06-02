@@ -14,5 +14,7 @@ namespace Domain.Entities
         public string? Avatar { get; set; }
         public DateTime? Birthday { get; set; }
 
+        public virtual Mentor? Mentor { get; set; }
+        public virtual Learner? Learner { get; set; }
     }
 }
