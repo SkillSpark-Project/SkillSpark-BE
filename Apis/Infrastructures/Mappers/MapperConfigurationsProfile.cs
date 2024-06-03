@@ -1,7 +1,9 @@
-﻿using Application.ViewModels.ChemicalsViewModels;
+﻿
 using AutoMapper;
 using Application.Commons;
 using Domain.Entities;
+using Application.ViewModels.CategoryViewModels.Requests;
+using Application.ViewModels.TagViewModels;
 
 namespace Infrastructures.Mappers
 {
@@ -9,12 +11,11 @@ namespace Infrastructures.Mappers
     {
         public MapperConfigurationsProfile()
         {
-           /* CreateMap<CreateChemicalViewModel, Chemical>();
             CreateMap(typeof(Pagination<>), typeof(Pagination<>));
-            CreateMap<Chemical, ChemicalViewModel>()
-                .ForMember(dest => dest._Id, src => src.MapFrom(x => x.Id));*/
-            
-
+            CreateMap<CategoryModel, Category>().ReverseMap();
+            CreateMap<TagModel, Tag>().ReverseMap();
+            /*             CreateMap<Chemical, ChemicalViewModel>()
+                 .ForMember(dest => dest._Id, src => src.MapFrom(x => x.Id));*/
         }
     }
 }

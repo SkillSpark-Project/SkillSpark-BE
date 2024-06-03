@@ -1,5 +1,6 @@
 ﻿using Application;
 using Application.Repositories;
+using Infrastructures.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -9,14 +10,25 @@ namespace Infrastructures
     {
 
         private readonly AppDbContext _dbContext;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly ICourseRepository _courseRepository;
+        private readonly ITagRepository _tagRepository;
         private IDbContextTransaction _transaction;
 
-        public UnitOfWork(AppDbContext dbContext
+
+        public UnitOfWork(AppDbContext dbContext, ICategoryRepository categoryRepository, ICourseRepository courseRepository,
+            ITagRepository tagRepository
          )
         {
             _dbContext = dbContext;
+            _categoryRepository = categoryRepository;
+            _courseRepository = courseRepository;
+            _tagRepository = tagRepository;
         }
+        public ICategoryRepository CategoryRepository => _categoryRepository;
+        public ICourseRepository CourseRepository => _courseRepository;
 
+        public ITagRepository TagRepository => _tagRepository;
 
         public async Task<int> SaveChangeAsync()
         {

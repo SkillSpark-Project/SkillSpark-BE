@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructures.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240524201231_NewMigration")]
+    [Migration("20240602191713_NewMigration")]
     partial class NewMigration
     {
         /// <inheritdoc />
@@ -156,9 +156,6 @@ namespace Infrastructures.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
@@ -188,8 +185,6 @@ namespace Infrastructures.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
 
                     b.ToTable("Category");
                 });
@@ -922,6 +917,15 @@ namespace Infrastructures.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsDone")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("LearnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("ModificationBy")
                         .HasColumnType("uniqueidentifier");
 
@@ -929,6 +933,10 @@ namespace Infrastructures.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LearnerId");
+
+                    b.HasIndex("LessonId");
 
                     b.ToTable("Process");
                 });
@@ -1279,13 +1287,6 @@ namespace Infrastructures.Migrations
                     b.Navigation("Mentor");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Category", b =>
-                {
-                    b.HasOne("Domain.Entities.Category", null)
-                        .WithMany("Categories")
-                        .HasForeignKey("CategoryId");
-                });
-
             modelBuilder.Entity("Domain.Entities.Chapter", b =>
                 {
                     b.HasOne("Domain.Entities.Course", "Course")
@@ -1330,7 +1331,7 @@ namespace Infrastructures.Migrations
             modelBuilder.Entity("Domain.Entities.Course", b =>
                 {
                     b.HasOne("Domain.Entities.Category", "Category")
-                        .WithMany()
+                        .WithMany("Courses")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1475,6 +1476,25 @@ namespace Infrastructures.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Process", b =>
+                {
+                    b.HasOne("Domain.Entities.Learner", "Learner")
+                        .WithMany()
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Lesson", "Lesson")
+                        .WithMany()
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Learner");
+
+                    b.Navigation("Lesson");
+                });
+
             modelBuilder.Entity("Domain.Entities.Requirement", b =>
                 {
                     b.HasOne("Domain.Entities.Course", "Course")
@@ -1587,7 +1607,7 @@ namespace Infrastructures.Migrations
 
             modelBuilder.Entity("Domain.Entities.Category", b =>
                 {
-                    b.Navigation("Categories");
+                    b.Navigation("Courses");
                 });
 
             modelBuilder.Entity("Domain.Entities.Mentor", b =>

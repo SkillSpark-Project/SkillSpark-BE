@@ -36,7 +36,6 @@ builder.Services.AddCors(options =>
 var configuration = builder.Configuration.Get<AppConfiguration>();
 builder.Services.AddInfrastructuresService(builder.Configuration, builder.Environment);
 builder.Services.AddWebAPIService();
-builder.Services.AddSingleton(configuration);
 /*
     register with singleton life time
     now we can use dependency injection for AppConfiguration

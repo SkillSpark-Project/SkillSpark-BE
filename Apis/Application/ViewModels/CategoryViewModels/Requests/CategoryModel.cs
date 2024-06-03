@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Application.ViewModels.CategoryViewModels.Requests
 {
-    public class Category : BaseEntity
+    public class CategoryModel
     {
         public string Name { get; set; }
-        public string? Image { get; set; }
-        public IList<Course> Courses { get; set; }
     }
 }

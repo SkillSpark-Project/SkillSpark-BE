@@ -17,38 +17,28 @@ namespace Infrastructures
     {
         public static IServiceCollection AddInfrastructuresService(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
         {
-            /*services.AddScoped<IChemicalService, ChemicalService>();
-            services.AddScoped<IUserService, UserService>();
-            
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ITagService, TagService>();
+            services.AddScoped<ILearnerService, LearnerService>();
+            services.AddScoped<IMentorService, MentorService>();
 
-            services.AddScoped<IChemicalRepository, ChemicalRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();*/
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ICourseRepository, CourseRepository>();
+            services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<ILearnerRepository, LearnerRepository>();
+            services.AddScoped<IMentorRepository, MentorRepository>();
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            
-            
-            services.AddSingleton<ICurrentTime, CurrentTime>();
 
-            // ATTENTION: if you do migration please check file README.md
-            /*if (configuration.GetValue<bool>("UseInMemoryDatabase"))
-            {
-                services.AddDbContext<AppDbContext>(options =>
-                    options.UseInMemoryDatabase("mentor_v1Db"));
-            }
-            else
-            {
-                
-            }*/
+            services.AddSingleton<ICurrentTime, CurrentTime>();
             services.AddDbContext<AppDbContext>(options =>
                     options.UseSqlServer(GetConnection(configuration, env),
                         builder => builder.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
-            services.AddIdentity < ApplicationUser, IdentityRole>().AddDefaultTokenProviders().AddEntityFrameworkStores<AppDbContext>();
-            // this configuration just use in-memory for fast develop
-            //services.AddDbContext<AppDbContext>(option => option.UseInMemoryDatabase("test"));
+            services.AddIdentity<ApplicationUser, IdentityRole>().AddDefaultTokenProviders().AddEntityFrameworkStores<AppDbContext>();
 
-            services.AddAutoMapper(typeof(MapperConfigurationsProfile).Assembly);
+            services.AddAutoMapper(typeof(MapperConfigurationsProfile));
             services.Configure<IdentityOptions>(options => options.SignIn.RequireConfirmedEmail = true);
-
 
             return services;
         }
@@ -65,5 +55,5 @@ namespace Infrastructures
         }
     }
 
-    
+
 }

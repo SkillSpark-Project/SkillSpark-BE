@@ -60,7 +60,6 @@ namespace Infrastructures.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ModificationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -72,11 +71,6 @@ namespace Infrastructures.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Category", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Category_Category_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Category",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -96,24 +90,6 @@ namespace Infrastructures.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ConnectionType", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Process",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ModificationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ModificationBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeleteBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Process", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -802,6 +778,39 @@ namespace Infrastructures.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Process",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LearnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LessonId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsDone = table.Column<bool>(type: "bit", nullable: false),
+                    CreationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ModificationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ModificationBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    DeletionDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeleteBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Process", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Process_Learner_LearnerId",
+                        column: x => x.LearnerId,
+                        principalTable: "Learner",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Process_Lesson_LessonId",
+                        column: x => x.LessonId,
+                        principalTable: "Lesson",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -846,11 +855,6 @@ namespace Infrastructures.Migrations
                 table: "BankInformation",
                 column: "MentorId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Category_CategoryId",
-                table: "Category",
-                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Chapter_CourseId",
@@ -944,6 +948,16 @@ namespace Infrastructures.Migrations
                 name: "IX_OrderTransaction_OrderId",
                 table: "OrderTransaction",
                 column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Process_LearnerId",
+                table: "Process",
+                column: "LearnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Process_LessonId",
+                table: "Process",
+                column: "LessonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Requirement_CourseId",
@@ -1041,19 +1055,19 @@ namespace Infrastructures.Migrations
                 name: "Tag");
 
             migrationBuilder.DropTable(
-                name: "Lesson");
+                name: "Order");
 
             migrationBuilder.DropTable(
-                name: "Order");
+                name: "Lesson");
 
             migrationBuilder.DropTable(
                 name: "WalletHistory");
 
             migrationBuilder.DropTable(
-                name: "Chapter");
+                name: "Learner");
 
             migrationBuilder.DropTable(
-                name: "Learner");
+                name: "Chapter");
 
             migrationBuilder.DropTable(
                 name: "Mentor");
