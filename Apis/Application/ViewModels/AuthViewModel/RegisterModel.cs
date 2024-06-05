@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.ViewModels.AuthViewModel
 {
-    public class RegisterModel : BaseValidationModel<RegisterModel>
+    public class RegisterModel
     {
         public string Email { get; set; }
         public string Username { get; set; }

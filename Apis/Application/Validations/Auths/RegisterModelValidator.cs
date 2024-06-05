@@ -12,7 +12,6 @@ namespace Application.Validations.Auths
     {
         public RegisterModelValidator()
         {
-            RuleLevelCascadeMode = CascadeMode.Stop;
 
             RuleFor(x => x.Username).NotEmpty().WithMessage("Tên đăng nhập không được để trống.").MaximumLength(50)
                 .WithMessage("Tên đăng nhập không quá 50 ký tự.").MustAsync(IsLetterOrDigitOnly).WithMessage("Tên đăng nhập chỉ được chứa chữ hoặc số.");
