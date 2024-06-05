@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Application.Commons
 {
-    public class SendMail
+    public class MailService
     {
-        public bool SendEmailNoBccAsync(string toMail, string subject, string confirmLink)
+        public bool SendEmail(string toMail, string subject, string confirmLink)
         {
             var email = new MimeMessage();
 

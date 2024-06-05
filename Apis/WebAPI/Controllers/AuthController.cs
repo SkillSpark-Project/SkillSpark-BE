@@ -24,33 +24,31 @@ namespace WebAPI.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IUserClaimsPrincipalFactory<ApplicationUser> _userClaimsPrincipalFactory;
-        private readonly IAuthorizationService _authorizationService;
+        private readonly IAuthService _auth;
         private readonly IConfiguration _configuration;
         public readonly IWebHostEnvironment _environment;
 
         public AuthController(UserManager<ApplicationUser> userManager,
              SignInManager<ApplicationUser> signInManager,
             IUserClaimsPrincipalFactory<ApplicationUser> userClaimsPrincipalFactory,
-            IAuthorizationService authorizationService,
+            IAuthService authService,
             IConfiguration configuration,
             IWebHostEnvironment environment)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
-            _authorizationService = authorizationService;
+            _auth = authService;
             _configuration = configuration;
             _environment = environment;
         }
         [HttpPost]
         [Route("/Login")]
+        [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var _auth = new AuthService(_userManager, _signInManager, _configuration, _environment);
             try
             {
-                //var result = await _identityService.AuthenticateAsync(email, password);
-
                 var user = await _userManager.FindByNameAsync(model.Email);
                 if (user == null)
                 {
@@ -60,41 +58,21 @@ namespace WebAPI.Controllers
                         return NotFound("Tài khoản này không tồn tại!");
                     }
                 }
+                //lấy host để redirect về send email
+                var referer = Request.Headers["Referer"].ToString().Trim();
+                var callbackUrl = await GetCallbackUrlAsync(user, referer, "EmailConfirm");
 
-                string callbackUrl = "";
-                //lấy host để redirect về
-                var referer = Request.Headers["Referer"].ToString();
-                string schema;
-                string host;
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                if (Uri.TryCreate(referer, UriKind.Absolute, out var uri))
-                {
-                    schema = uri.Scheme; // Lấy schema (http hoặc https) của frontend
-                    host = uri.Host; // Lấy host của frontend
-                    callbackUrl = schema + "://" + host + Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, code = code });
-                }
-                if (callbackUrl.Equals(""))
-                {
-                    callbackUrl = Request.Scheme + "://" + Request.Host + Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, code = code });
-                }
-                //kết thúc lấy host để redirect về và tạo link
-
-
-                //callbackUrl = Request.Scheme + "://" + Request.Host + Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, code = code });
                 var result = await _auth.Login(model.Email, model.Password, callbackUrl);
                 if (result == null)
                 {
-                    return NotFound("Đăng nhập không thành công!");
+                    return BadRequest("Đăng nhập không thành công!");
                 }
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
-
         }
 
 
@@ -139,7 +117,7 @@ namespace WebAPI.Controllers
                                     callbackUrl = "https://localhost:5001/" + Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, code = code });
                                 }
 
-                                await _auth.SendEmailConfirmAsync(model.Email.Trim(), callbackUrl);
+                               // await _auth.SendEmailConfirmAsync(model.Email.Trim(), callbackUrl);
                                 return Ok("Đăng ký tài khoản WarehouseBridge thành công. Vui lòng kiểm tra email để kích hoạt tài khoản!");
                             }
                             else
@@ -198,6 +176,45 @@ namespace WebAPI.Controllers
                 return BadRequest("Xác nhận Email không thành công! Link xác nhận không chính xác hoặc đã hết hạn! Vui lòng sử dụng đúng link được gửi từ WarehouseBridge tới Email của bạn!");
 
             }
+        }
+
+        [NonAction]
+        public async Task<string> GetCallbackUrlAsync(ApplicationUser user, string referer, string type)
+        {
+           
+            string callbackUrl = "";
+            string schema;
+            string host;
+            var code = "";
+            var action = "";
+            switch (type)
+            {
+                case "EmailConfirm":
+                    code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    action = "ConfirmEmail";
+                    break;
+
+                case "ResetPassword":
+                    code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    action = "ResetPassword";
+                    break;
+            }
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            if (!referer.Equals("") && Uri.TryCreate(referer, UriKind.Absolute, out var uri))
+            {
+                schema = uri.Scheme; // Lấy schema (http hoặc https) của frontend
+                host = uri.Host; // Lấy host của frontend
+                callbackUrl = schema + "://" + host + Url.Action(action, "Auth", new { userId = user.Id, code = code });
+            }
+            if (referer.Equals("https://localhost:5001/swagger/index.html"))
+            {
+                callbackUrl = "https://localhost:5001" + Url.Action(action, "Auth", new { userId = user.Id, code = code });
+            }
+            else if (referer.Contains("http://localhost:5173"))
+            {
+                callbackUrl = "http://localhost:5173" + Url.Action(action, "Auth", new { userId = user.Id, code = code });
+            }
+            return callbackUrl;
         }
     }
 }

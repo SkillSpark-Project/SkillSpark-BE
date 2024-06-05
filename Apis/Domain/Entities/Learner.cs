@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class Learner:BaseEntity
+    public class Learner : BaseEntity
     {
         [ForeignKey("ApplicationUser")]
         public string UserId { get; set; }

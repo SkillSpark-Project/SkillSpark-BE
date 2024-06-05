@@ -8,5 +8,6 @@ namespace Application.Interfaces
 {
     public interface ILearnerService
     {
+        public Task CreateLearner(string userId);
     }
 }

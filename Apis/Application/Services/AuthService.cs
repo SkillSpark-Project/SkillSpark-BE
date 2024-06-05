@@ -1,9 +1,11 @@
 ﻿using Application.Commons;
+using Application.Validations.Auths;
 using Application.ViewModels;
 using Application.ViewModels.AuthViewModel;
 using Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -37,15 +39,15 @@ namespace Application.Services
             var user = await _userManager.FindByNameAsync(email);
             if (user == null)
             {
-                user = await _userManager.FindByEmailAsync(pass);
-                if (user == null)
+                user = await _userManager.FindByEmailAsync(email);
+                if (user == null )
                 {
                     throw new KeyNotFoundException($"Không tìm thấy tên đăng nhập hoặc địa chỉ email '{email}'");
                 }
             }
             if (user.EmailConfirmed == false)
             {
-                var result = await SendEmailConfirmAsync(email.Trim(), callbackUrl);
+                var result = await SendEmailAsync(user, callbackUrl, "EmailConfirm");
                 throw new Exception("Tài khoản này chưa xác thực Email. Vui lòng kiểm tra Email được vừa gửi đến hoặc liên hệ quản trị viên để được hỗ trợ!");
             }
             else
@@ -54,7 +56,6 @@ namespace Application.Services
 
                 if (result != null)
                 {
-
                     var roles = await _userManager.GetRolesAsync(user);
                     var userModel = new LoginViewModel();
                     userModel.Id = user.Id;
@@ -70,8 +71,93 @@ namespace Application.Services
                 throw new AuthenticationException("Đăng nhập không thành công!");
             }
         }
+        public async Task<bool> SendEmailAsync(ApplicationUser user, string callbackUrl, string type)
+        {
+            var isLock = await _userManager.IsLockedOutAsync(user);
+            if (isLock)
+            {
+                throw new KeyNotFoundException($"Tài khoản này hiện tại đang bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ");
+            }
+            MailService mail = new MailService();
+            var temp = false;
+            switch (type)
+            {
+                case "EmailConfirm":
+                    temp = mail.SendEmail(user.Email, "Xác nhận tài khoản từ Thanh Sơn Garden",
+            $"<h2 style=\" color: #00B214;\">Xác thực tài khoản từ Thanh Sơn Garden</h2>\r\n<p style=\"margin-bottom: 10px;\r\n    text-align: left;\">Xin chào <strong>{user.Fullname}</strong>"
+            + ",</p>\r\n<p style=\"margin-bottom: 10px;\r\n    text-align: left;\"> Cảm ơn bạn đã đăng ký tài khoản tại Thanh Sơn Garden." +
+            " Để có được trải nghiệm dịch vụ và được hỗ trợ tốt nhất, bạn cần hoàn thiện xác thực tài khoản.</p>"
+            + $"<a href='{HtmlEncoder.Default.Encode(callbackUrl)}' style=\"display: inline-block; background-color: #00B214;  color: #fff;" +
+            $"    padding: 10px 20px;\r\n    border: none;\r\n    border-radius: 5px;\r\n    cursor: pointer;\r\n    text-decoration: none;\">Xác thực ngay</a>"
+            );
+                    break;
+                case "ResetPassword":
+                    string body = "<h3 style=\" color: #00B214;\">Xác nhận yêu cầu đổi mật khẩu truy cập vào Thạch Sơn Garden</h3>\r\n" + $"<p style=\"margin-bottom: 10px;\r\n    text-align: left;\">Xin chào <strong>{user.Fullname}</strong>,</p>\r\n<p style=\"margin-bottom: 10px;\r\n   " +
+                    " text-align: left;\"> Bạn đã yêu cầu đổi mật khẩu. Vui lòng nhấp vào liên kết bên dưới để xác nhận yêu cầu. Vui lòng\r\n  lưu ý rằng đường dẫn xác nhận chỉ có hiệu lực trong vòng 30 phút. Sau thời gian đó, đường đãn sẽ hết hiệu lực và bạn\r\n" +
+                    "  sẽ cần yêu cầu xác nhận lại. Nếu bạn không có bất kỳ yêu cầu thay đổi nào vui lòng không nhấn bất kỳ đường dẫn nào. Cảm ơn\r\n</p>" + $"<a href=\"{callbackUrl}\" style=\"display: inline-block;\r\n   " +
+                    " background-color: #00B214;\r\n    color: #fff;\r\n    padding: 10px 20px;\r\n    border: none;\r\n    border-radius: 5px;\r\n    cursor: pointer;\r\n    text-decoration: none;\">Xác thực ngay</a>";
+                    temp = mail.SendEmail(user.Email, "Xác thực yêu cầu đổi mật khẩu tài khoản từ Thanh Sơn Garden", body);
+                    break;
+                case "ResetPasswordForMobile":
+                    string body1 = "<h3 style=\" color: #00B214;\">Mã xác thực yêu cầu đổi mật khẩu truy cập vào Thạch Sơn Garden</h3>\r\n" + $"<p style=\"margin-bottom: 10px;\r\n    text-align: left;\">Xin chào <strong>{user.Fullname}</strong>,</p>\r\n<p style=\"margin-bottom: 10px;\r\n   " +
+                    " text-align: left;\"> Bạn đã yêu cầu đổi mật khẩu. Vui lòng sử dụng OTP bên dưới để thực hiện xác thực tài khoản. Vui lòng\r\n  lưu ý rằng mã OTP chỉ có hiệu lực trong vòng 30 phút. Sau thời gian đó, đường đãn sẽ hết hiệu lực và bạn\r\n" +
+                    "  sẽ cần yêu cầu xác nhận lại. Nếu bạn không có bất kỳ yêu cầu thay đổi nào vui lòng không nhấn bất kỳ đường dẫn nào. Cảm ơn\r\n</p>" + $"Mã xác thực: " + callbackUrl;
+                    temp = mail.SendEmail(user.Email, "Mã xác thực yêu cầu đổi mật khẩu tài khoản từ Thanh Sơn Garden", body1);
+                    break;
+            }
+            var result = (temp) ? true : false;
+            return result;
+        }
+        public async Task<string> AuthenticateAsync(string username, string password)
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(username);
+                if (user == null)
+                {
+                    throw new KeyNotFoundException($"Không tìm thấy tên đăng nhập hoặc địa chỉ email '{username}'");
+                }
+            }
+            if (user.LockoutEnd != null && user.LockoutEnd.Value > DateTime.Now)
+            {
+                throw new KeyNotFoundException($"Tài khoản này hiện tại đang bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ!");
+            }
+            await _userManager.SetTwoFactorEnabledAsync(user, false);
+            //sign in  
+            var signInResult = await _signInManager.PasswordSignInAsync(user, password, false, false);
+            if (signInResult.Succeeded)
+            {
+                var isAdmin = await _userManager.IsInRoleAsync(user, "Manager");
+                var isMentor = await _userManager.IsInRoleAsync(user, "Mentor");
+                var isLearner = await _userManager.IsInRoleAsync(user, "Learner");
+                var roles = await _userManager.GetRolesAsync(user);
+                List<Claim> authClaims = new List<Claim>();
+                authClaims.Add(new Claim(ClaimTypes.Email, user.Email));
+                authClaims.Add(new Claim("userId", user.Id));
+                authClaims.Add(new Claim(ClaimTypes.Name, user.UserName));
+                authClaims.Add(new Claim("isAdmin", isAdmin.ToString()));
+                authClaims.Add(new Claim("isMentor", isMentor.ToString()));
+                authClaims.Add(new Claim("isLearner", isLearner.ToString()));
+                authClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+                foreach (var item in roles)
+                {
+                    authClaims.Add(new Claim(ClaimTypes.Role, item));
+                }
 
+                var authenKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SecrectKey"]));
 
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["JWT:ValidIssuer"],
+                    audience: _configuration["JWT:ValidAudience"],
+                    expires: DateTime.Now.AddDays(1),
+                    claims: authClaims,
+                    signingCredentials: new SigningCredentials(authenKey, SecurityAlgorithms.HmacSha512Signature)
+                    );
+                return new JwtSecurityTokenHandler().WriteToken(token);
+            }
+            throw new InvalidOperationException("Sai mật khẩu. Vui lòng đăng nhập lại!");
+        }
         public async Task<ErrorViewModel> Register(RegisterModel model)
         {
             var resultData = await CreateUserAsync(model);
@@ -97,7 +183,6 @@ namespace Application.Services
                 return errors;
             }
         }
-
         public async Task<IdentityResult> CreateUserAsync(RegisterModel model)
 
         {
@@ -115,95 +200,50 @@ namespace Application.Services
             return result;
         }
 
-        public async Task<bool> IsInRoleAsync(string userId, string role)
+        public async Task CheckAccountExist(RegisterModel model)
         {
-            var user = _userManager.Users.SingleOrDefault(u => u.Id == userId);
-
-            return user != null && await _userManager.IsInRoleAsync(user, role);
+            var existEmailUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existEmailUser != null)
+            {
+                throw new Exception("Email này đã được sử dụng!");
+            }
+            var existUsernameUser = await _userManager.FindByNameAsync(model.Username);
+            if (existUsernameUser != null)
+            {
+                throw new Exception("Tên đăng nhập này đã được sử dụng!");
+            }
+            return;
         }
-
-        public async Task<string> AuthenticateAsync(string username, string password)
+        public async Task ConfirmEmailAsync(string? code, string? userId)
         {
-            var user = await _userManager.FindByNameAsync(username);
+            if (userId == null || code == null)
+            {
+                throw new Exception("Xác nhận Email không thành công! Link xác nhận không chính xác ! Vui lòng sử dụng đúng link được gửi từ Thanh Sơn Garden tới Email của bạn!");
+            }
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                user = await _userManager.FindByEmailAsync(username);
-                if (user == null)
-                {
-                    throw new KeyNotFoundException($"Không tìm thấy tên đăng nhập hoặc địa chỉ email '{username}'");
-                }
+                throw new Exception("Xác nhận Email không thành công! Link xác nhận không chính xác! Vui lòng sử dụng đúng link được gửi từ Thanh Sơn Garden tới Email của bạn!");
             }
-            if (user.LockoutEnd != null && user.LockoutEnd.Value > DateTime.Now)
+            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            if (!result.Succeeded)
             {
-                throw new KeyNotFoundException($"Tài khoản này hiện tại đang bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ");
+                throw new Exception("Xác nhận Email không thành công! Link xác nhận không chính xác hoặc đã hết hạn! Vui lòng sử dụng đúng link được gửi từ Thanh Sơn Garden tới Email của bạn!");
             }
-            if (user.EmailConfirmed == false)
-            {
-                throw new KeyNotFoundException($"Email của tài khoản này chưa được xác nhận. Vui lòng nhấn quên mật khẩu!");
-            }
-
-            //sign in  
-            var signInResult = await _signInManager.PasswordSignInAsync(user, password, false, false);
-            if (signInResult.Succeeded)
-            {
-                var roles = await _userManager.GetRolesAsync(user);
-                List<Claim> authClaims = new List<Claim>();
-                authClaims.Add(new Claim(ClaimTypes.Email, user.Email));
-                authClaims.Add(new Claim(ClaimTypes.Name, user.UserName));
-
-                authClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
-                foreach (var item in roles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, item));
-                }
-
-                var authenKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SecrectKey"]));
-
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["JWT:ValidIssuer"],
-                    audience: _configuration["JWT:ValidAudience"],
-                    expires: DateTime.Now.AddDays(1),
-                    claims: authClaims,
-                    signingCredentials: new SigningCredentials(authenKey, SecurityAlgorithms.HmacSha512Signature)
-                    );
-
-
-                return new JwtSecurityTokenHandler().WriteToken(token);
-            }
-
-            throw new InvalidOperationException("Sai mật khẩu. Vui lòng nhập lại!");
         }
 
-        public async Task<bool> SendEmailConfirmAsync(string username, string callbackUrl)
+        public async Task<IList<string>> ValidateAsync(RegisterModel model)
         {
-            var user = await _userManager.FindByNameAsync(username);
-            if (user == null)
+            var validator = new RegisterModelValidator();
+            var result = await validator.ValidateAsync(model);
+            if (!result.IsValid)
             {
-                user = await _userManager.FindByEmailAsync(username);
-                if (user == null)
-                {
-                    throw new KeyNotFoundException($"Không tìm thấy tên đăng nhập hoặc địa chỉ email '{username}'");
-                }
+                var errors = new List<string>();
+                errors.AddRange(result.Errors.Select(x => x.ErrorMessage));
+                return errors;
             }
-            if (user.LockoutEnd != null && user.LockoutEnd.Value > DateTime.Now)
-            {
-                throw new KeyNotFoundException($"Tài khoản này hiện tại đang bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ");
-            }
-
-            SendMail mail = new SendMail();
-            var temp = mail.SendEmailNoBccAsync(user.Email, "Email Xác Nhận Từ Warehouse Bridge",
-                "<style>\r\n    body {\r\n      font-family: Arial, sans-serif;\r\n      line-height: 1.5;\r\n    }\r\n    .container {\r\n      max-width: 600px;\r\n      margin: 0 auto;\r\n      padding: 20px;\r\n    }\r\n    h1 {\r\n      color: #333;\r\n    }\r\n    p {\r\n      margin-bottom: 20px;\r\n    }\r\n    .button {\r\n      display: inline-block;\r\n      background-color: #007bff;\r\n      color: #fff;\r\n      padding: 10px 20px;\r\n      text-decoration: none;\r\n      border-radius: 5px;\r\n    }\r\n  </style>\r\n  <div class=\"container\">\r\n    <h1>Xác nhận địa chỉ email từ Warehouse Brigde</h1>\r\n    <p>Xin vui lòng xác nhận rằng đây là địa chỉ email chính thức của công ty bằng cách nhấp vào nút bên dưới:</p>\r\n   " + $" <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Link xác nhân địa chỉ Email</a>" + "    <p>Vui lòng lưu ý rằng đường dẫn xác nhận sẽ chỉ có hiệu lực trong vòng 30 phút. Sau thời gian đó, đường dẫn sẽ hết hiệu lực và bạn sẽ cần yêu cầu xác nhận lại.</p>\r\n    <p>Nếu có bất kỳ thay đổi hoặc sự nhầm lẫn nào liên quan đến địa chỉ email của công ty, xin vui lòng thông báo cho chúng tôi ngay lập tức để chúng tôi có thể cập nhật thông tin đúng cho công ty.</p>\r\n    <p>Xin cảm ơn vì sự hỗ trợ của quý công ty trong việc xác nhận địa chỉ email. Chúng tôi mong muốn tiếp tục hợp tác và cung cấp các dịch vụ công nghệ tốt nhất cho công ty của quý vị.</p>\r\n   "
-              );
-            if (temp == true)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-
-            }
-
+            return null;
         }
 
     }

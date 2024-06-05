@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Application.ViewModels.AuthViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,13 @@ namespace Application.Interfaces
 {
     public interface IAuthService
     {
+        public Task<LoginViewModel> Login(string email, string pass, string callbackUrl);
+        //public Task<List<string>> Register(RegisterModel model);
+        //public Task CheckAccountExist(RegisterModel model);
+        //public Task ConfirmEmailAsync(string? code, string? userId);
+       // public Task<bool> SendEmailAsync(string username, string callbackUrl, string type);
+        /* public Task<string> ResetPasswordAsync(ResetPassModel model);*/
+        /*public Task<IList<string>> ValidateAsync(RegisterModel model);*/
+       /* public Task<string> ResetPasswordAsync(ResetPassModel model);*/
     }
 }
