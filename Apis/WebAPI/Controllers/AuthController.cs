@@ -12,8 +12,6 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Plugins;
 using System.Text;
-using WebAPI.FilterAttibutes;
-using WebAPI.Validations.Auth;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WebAPI.Controllers
@@ -79,7 +77,6 @@ namespace WebAPI.Controllers
 
         [HttpPost]
         [Route("/Register")]
-        [ServiceFilter(typeof(ModelValidatorAttribute))]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
             var _auth = new AuthService(_userManager, _signInManager, _configuration, _environment);
@@ -89,7 +86,7 @@ namespace WebAPI.Controllers
                 var existUsernameUser = await _userManager.FindByNameAsync(model.Username);
                 if (existUsernameUser == null)
                 {
-                    try
+                    /*try
                     {
                         var validator = new RegisterModelValidator();
                         var result = validator.Validate(model);
@@ -138,7 +135,8 @@ namespace WebAPI.Controllers
                     catch (Exception ex)
                     {
                         return NotFound(ex.Message);
-                    }
+                    }*/
+                    return NotFound("Tên đăng nhập này đã được sử dụng!");
                 }
                 else
                 {
