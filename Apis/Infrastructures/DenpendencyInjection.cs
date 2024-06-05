@@ -2,7 +2,10 @@
 using Application.Interfaces;
 using Application.Repositories;
 using Application.Services;
+using Application.Validations.Auths;
+using Application.ViewModels.AuthViewModel;
 using Domain.Entities;
+using FluentValidation;
 using Infrastructures.Mappers;
 using Infrastructures.Repositories;
 using Microsoft.AspNetCore.Hosting;
@@ -21,6 +24,8 @@ namespace Infrastructures
             services.AddScoped<ITagService, TagService>();
             services.AddScoped<ILearnerService, LearnerService>();
             services.AddScoped<IMentorService, MentorService>();
+            services.AddScoped<IAuthService, AuthService>();
+
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICourseRepository, CourseRepository>();
@@ -39,6 +44,10 @@ namespace Infrastructures
 
             services.AddAutoMapper(typeof(MapperConfigurationsProfile));
             services.Configure<IdentityOptions>(options => options.SignIn.RequireConfirmedEmail = true);
+
+            
+
+
 
             return services;
         }

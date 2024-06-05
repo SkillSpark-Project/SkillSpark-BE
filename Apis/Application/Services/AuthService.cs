@@ -1,4 +1,5 @@
 ﻿using Application.Commons;
+using Application.Interfaces;
 using Application.Validations.Auths;
 using Application.ViewModels;
 using Application.ViewModels.AuthViewModel;
@@ -16,7 +17,7 @@ using System.Text.Encodings.Web;
 
 namespace Application.Services
 {
-    public class AuthService 
+    public class AuthService :IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -191,7 +192,6 @@ namespace Application.Services
                 UserName = model.Username,
                 Email = model.Email,
                 Fullname = model.Fullname,
-                Avatar = model.Avatar,
                 Birthday = model.Birthday,
                 PhoneNumber = model.PhoneNumber
             };

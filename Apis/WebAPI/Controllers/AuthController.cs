@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Plugins;
 using System.Text;
+using WebAPI.FilterAttibutes;
 using WebAPI.Validations.Auth;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -78,6 +79,7 @@ namespace WebAPI.Controllers
 
         [HttpPost]
         [Route("/Register")]
+        [ServiceFilter(typeof(ModelValidatorAttribute))]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
             var _auth = new AuthService(_userManager, _signInManager, _configuration, _environment);

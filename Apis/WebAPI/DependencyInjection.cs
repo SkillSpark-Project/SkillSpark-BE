@@ -1,8 +1,12 @@
 ﻿using Application.Interfaces;
+using Application.Validations.Auths;
+using Application.ViewModels.AuthViewModel;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 using System.Diagnostics;
+using WebAPI.FilterAttibutes;
 using WebAPI.Middlewares;
 using WebAPI.Services;
 
@@ -23,6 +27,11 @@ namespace WebAPI
             services.AddHttpContextAccessor();
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
+
+            services.AddTransient<IValidator<RegisterModel>, RegisterModelValidator>();
+
+            // Register the filter attribute
+            services.AddSingleton<ModelValidatorAttribute>();
 
             services.AddSwaggerGen(options =>
             {
