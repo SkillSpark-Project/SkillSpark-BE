@@ -72,11 +72,7 @@ namespace WebAPI.Controllers
                         title = "Đăng nhập không thành công!"
                     });
                 }
-                 return Ok(new
-                {
-                    status = Ok().StatusCode,
-                    title = "Đăng nhập thành công"
-                });
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -99,11 +95,7 @@ namespace WebAPI.Controllers
                 var referer = Request.Headers["Referer"].ToString().Trim();
                 var callbackUrl = await GetCallbackUrlAsync(user, referer, "EmailConfirm");
                 await _auth.SendEmailAsync(user, callbackUrl, "EmailConfirm");
-                return Ok(new
-                {
-                    status = BadRequest().StatusCode,
-                    title = "Đăng ký tài khoản Thanh Sơn Garden thành công. Vui lòng kiểm tra email để kích hoạt tài khoản!"
-                });
+                return Ok("Đăng ký tài khoản Thanh Sơn Garden thành công. Vui lòng kiểm tra email để kích hoạt tài khoản");
             }
             catch (ValidationException ex)
             {
@@ -152,11 +144,7 @@ namespace WebAPI.Controllers
             string StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
             if (result.Succeeded)
             {
-                return Ok(new
-                {
-                    status = Ok().StatusCode,
-                    title = "Xác nhận Email thành công!Bây giờ bạn có thể đăng nhập vào tài khoản của mình bằng Email hoặc Username vừa xác thực !"
-                });
+                return Ok("Xác nhận Email thành công!Bây giờ bạn có thể đăng nhập vào tài khoản của mình bằng Email hoặc Username vừa xác thực");
             }
             else
             {

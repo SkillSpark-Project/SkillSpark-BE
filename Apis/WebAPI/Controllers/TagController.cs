@@ -27,7 +27,11 @@ namespace WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = ex.Message
+                });
             }
         }
         [HttpGet("{id}")]
@@ -38,7 +42,11 @@ namespace WebAPI.Controllers
                 var tag = await _tagService.GetById(id);
                 if (tag == null)
                 {
-                    return BadRequest("Không tìm thấy");
+                    return NotFound(new
+                    {
+                        status = NotFound().StatusCode,
+                        title = "Không tìm thấy"
+                    });
                 }
                 else
                 {
@@ -47,7 +55,11 @@ namespace WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = ex.Message
+                });
             }
         }
         [HttpPost]
@@ -60,9 +72,13 @@ namespace WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = ex.Message
+                });
             }
-            return Ok();
+            return Ok("Tạo mới thành công");
         }
         [HttpPut("{id}")]
         //[Authorize(Roles = "Manager")]
@@ -74,9 +90,13 @@ namespace WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = ex.Message
+                });
             }
-            return Ok();
+            return Ok("Cập nhật thành công");
         }
         [HttpDelete("{id}")]
         //[Authorize(Roles = "Manager")]
@@ -88,9 +108,13 @@ namespace WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = ex.Message
+                });
             }
-            return Ok();
+            return Ok("Xóa thành công");
         }
     }
 }
