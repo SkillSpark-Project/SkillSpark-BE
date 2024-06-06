@@ -3,21 +3,16 @@
 namespace Application.Commons.Exeptions
 {
     public class ValidationException :Exception
-    {
-        public ValidationException()
-       : base("Đã xảy ra một hoặc nhiều lỗi xác thực.")
+    {        public List<string> Errors { get; }
+
+        public ValidationException(List<string> errors)
         {
-            Errors = new Dictionary<string, string[]>();
+            Errors = errors;
         }
 
-        public ValidationException(IEnumerable<ValidationFailure> failures)
-            : this()
+        public override string ToString()
         {
-            Errors = failures
-                .GroupBy(e => e.PropertyName, e => e.ErrorMessage)
-                .ToDictionary(failureGroup => failureGroup.Key, failureGroup => failureGroup.ToArray());
+            return string.Join(Environment.NewLine, Errors);
         }
-
-        public IDictionary<string, string[]> Errors { get; }
     }
 }

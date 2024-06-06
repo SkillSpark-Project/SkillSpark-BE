@@ -16,6 +16,7 @@ namespace Domain.Entities
         public string Image {  get; set; }
         public string Description { get; set; }
         public float Rate { get; set; } = 0;
+        public double? Price { get; set; }
         public int NumberLearner { get; set; } = 0;
         public string ShortDescripton { get; set; }
         public virtual Category Category { get; set; }

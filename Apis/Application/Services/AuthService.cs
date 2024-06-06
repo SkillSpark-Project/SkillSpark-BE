@@ -1,4 +1,5 @@
 ﻿using Application.Commons;
+using Application.Commons.Exeptions;
 using Application.Interfaces;
 using Application.Validations.Auths;
 using Application.ViewModels;
@@ -17,23 +18,25 @@ using System.Text.Encodings.Web;
 
 namespace Application.Services
 {
-    public class AuthService :IAuthService
+    public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
         public readonly IWebHostEnvironment _environment;
+        private readonly ILearnerService _learnerService;
 
         public AuthService
             (UserManager<ApplicationUser> userManager,
              SignInManager<ApplicationUser> signInManager,
             IConfiguration configuration,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment, ILearnerService learnerService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _environment = environment;
+            _learnerService = learnerService;
         }
         public async Task<LoginViewModel> Login(string email, string pass, string callbackUrl)
         {
@@ -41,20 +44,19 @@ namespace Application.Services
             if (user == null)
             {
                 user = await _userManager.FindByEmailAsync(email);
-                if (user == null )
+                if (user == null)
                 {
                     throw new KeyNotFoundException($"Không tìm thấy tên đăng nhập hoặc địa chỉ email '{email}'");
                 }
             }
             if (user.EmailConfirmed == false)
             {
-                var result = await SendEmailAsync(user, callbackUrl, "EmailConfirm");
+                 await SendEmailAsync(user, callbackUrl, "EmailConfirm");
                 throw new Exception("Tài khoản này chưa xác thực Email. Vui lòng kiểm tra Email được vừa gửi đến hoặc liên hệ quản trị viên để được hỗ trợ!");
             }
             else
             {
                 var result = await AuthenticateAsync(email.Trim(), pass.Trim());
-
                 if (result != null)
                 {
                     var roles = await _userManager.GetRolesAsync(user);
@@ -159,58 +161,17 @@ namespace Application.Services
             }
             throw new InvalidOperationException("Sai mật khẩu. Vui lòng đăng nhập lại!");
         }
-        public async Task<ErrorViewModel> Register(RegisterModel model)
-        {
-            var resultData = await CreateUserAsync(model);
-            if (resultData.Succeeded)
-            {
-                var user = await _userManager.FindByEmailAsync(model.Email);
-                var addRoleResult = await _userManager.AddToRoleAsync(user, "Customer");
-                if (addRoleResult.Succeeded)
-                {
-                    return null;
-                }
-                else
-                {
-                    await _userManager.DeleteAsync(user);
-                    throw new Exception("Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại!");
-                }
-            }
-            else
-            {
-                ErrorViewModel errors = new ErrorViewModel();
-                errors.Errors = new List<string>();
-                errors.Errors.AddRange(resultData.Errors.Select(x => x.Description));
-                return errors;
-            }
-        }
-        public async Task<IdentityResult> CreateUserAsync(RegisterModel model)
-
-        {
-            var user = new ApplicationUser
-            {
-                UserName = model.Username,
-                Email = model.Email,
-                Fullname = model.Fullname,
-                Birthday = model.Birthday,
-                PhoneNumber = model.PhoneNumber
-            };
-
-            var result = await _userManager.CreateAsync(user, model.Password);
-            return result;
-        }
-
         public async Task CheckAccountExist(RegisterModel model)
         {
             var existEmailUser = await _userManager.FindByEmailAsync(model.Email);
             if (existEmailUser != null)
             {
-                throw new Exception("Email này đã được sử dụng!");
+                throw new Exception("Email này đã được sử dụng");
             }
             var existUsernameUser = await _userManager.FindByNameAsync(model.Username);
             if (existUsernameUser != null)
             {
-                throw new Exception("Tên đăng nhập này đã được sử dụng!");
+                throw new Exception("Tên đăng nhập này đã được sử dụng");
             }
             return;
         }
@@ -232,19 +193,51 @@ namespace Application.Services
                 throw new Exception("Xác nhận Email không thành công! Link xác nhận không chính xác hoặc đã hết hạn! Vui lòng sử dụng đúng link được gửi từ Thanh Sơn Garden tới Email của bạn!");
             }
         }
-
-        public async Task<IList<string>> ValidateAsync(RegisterModel model)
+        public async Task<ApplicationUser> Register(RegisterModel model)
         {
-            var validator = new RegisterModelValidator();
-            var result = await validator.ValidateAsync(model);
-            if (!result.IsValid)
+            await CheckAccountExist(model);
+            var user = new ApplicationUser
             {
-                var errors = new List<string>();
-                errors.AddRange(result.Errors.Select(x => x.ErrorMessage));
-                return errors;
-            }
-            return null;
-        }
+                UserName = model.Username,
+                Email = model.Email,
+                Fullname = model.Fullname,
+                PhoneNumber = model.PhoneNumber,
+                Birthday = model.Birthday,
+            };
+            var resultData = await CreateUserAsync(user, model.Password);
+            if (resultData.Succeeded)
+            {
+                try
+                {
+                    await _learnerService.CreateLearner(user.Id);
+                }
+                catch (Exception)
+                {
+                    await _userManager.DeleteAsync(user);
+                    throw new Exception("Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại!");
+                }
+                var addRoleResult = await _userManager.AddToRoleAsync(user, "Learner");
 
+                if (addRoleResult.Succeeded)
+                {
+                    return user;
+                }
+                else
+                {
+                    await _userManager.DeleteAsync(user);
+                    throw new Exception("Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại!");
+                }
+            }
+            else
+            {
+                var errors = resultData.Errors.Select(x => x.Description).ToList();
+                throw new ValidationException(errors);
+            }
+        }
+        public async Task<IdentityResult> CreateUserAsync(ApplicationUser model, string password)
+        {
+            var result = await _userManager.CreateAsync(model, password);
+            return result;
+        }
     }
 }

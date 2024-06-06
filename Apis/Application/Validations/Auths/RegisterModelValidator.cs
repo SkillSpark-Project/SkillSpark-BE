@@ -35,8 +35,8 @@ namespace Application.Validations.Auths
               Must(ContainsUppercase).WithMessage("Mật khẩu phải có chứa ít nhất một chữ cái in hoa.")
               .Must(ContainsSpecialCharacter).WithMessage("Mật khẩu phải có chứa ít nhất một ký tự đặc biệt.");
             RuleFor(x => x.Birthday).NotEmpty().WithMessage("Họ tên không được để trống.")
-               .LessThan(DateTime.Now)
-               .WithMessage("Ngày sing phải sau ngyaf hôm nay.");
+               .LessThan(DateTime.Today)
+               .WithMessage("Ngày sing phải trước ngày hôm nay hôm nay.");
         }
         private bool IsPhoneNumberValid(string phoneNumber)
         {

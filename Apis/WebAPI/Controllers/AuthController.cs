@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.Commons.Exeptions;
+using Application.Interfaces;
 using Application.Services;
 using Application.ViewModels;
 using Application.ViewModels.AuthViewModel;
@@ -9,10 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore;
-using NuGet.Protocol.Plugins;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WebAPI.Controllers
 {
@@ -54,7 +52,11 @@ namespace WebAPI.Controllers
                     user = await _userManager.FindByEmailAsync(model.Email);
                     if (user == null)
                     {
-                        return NotFound("Tài khoản này không tồn tại!");
+                        return NotFound(new
+                        {
+                            status = NotFound().StatusCode,
+                            title = "Tài khoản này không tồn tại!"
+                        });
                     }
                 }
                 //lấy host để redirect về send email
@@ -64,88 +66,61 @@ namespace WebAPI.Controllers
                 var result = await _auth.Login(model.Email, model.Password, callbackUrl);
                 if (result == null)
                 {
-                    return BadRequest("Đăng nhập không thành công!");
+                    return BadRequest(new
+                    {
+                        status = BadRequest().StatusCode,
+                        title = "Đăng nhập không thành công!"
+                    });
                 }
-                return Ok(result);
+                 return Ok(new
+                {
+                    status = Ok().StatusCode,
+                    title = "Đăng nhập thành công"
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = ex.Message
+                });
             }
         }
 
 
-        [HttpPost]
-        [Route("/Register")]
+        [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            var _auth = new AuthService(_userManager, _signInManager, _configuration, _environment);
-            var existEmailUser = await _userManager.FindByEmailAsync(model.Email);
-            if (existEmailUser == null)
+            try
             {
-                var existUsernameUser = await _userManager.FindByNameAsync(model.Username);
-                if (existUsernameUser == null)
+                var user = await _auth.Register(model);
+                //lấy host để redirect về
+                var referer = Request.Headers["Referer"].ToString().Trim();
+                var callbackUrl = await GetCallbackUrlAsync(user, referer, "EmailConfirm");
+                await _auth.SendEmailAsync(user, callbackUrl, "EmailConfirm");
+                return Ok(new
                 {
-                    /*try
-                    {
-                        var validator = new RegisterModelValidator();
-                        var result = validator.Validate(model);
-                        if (result.IsValid)
-                        {
-                            //kết thúc lấy host để redirect về và tạo link
-                            var temp = await _auth.Register(model);
-                            if (temp == null)
-                            {
-                                var user = await _userManager.FindByEmailAsync(model.Email);
-                                string callbackUrl = "";
-                                //lấy host để redirect về
-                                var referer = Request.Headers["Referer"].ToString();
-                                string schema;
-                                string host;
-                                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
-                                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                                if (Uri.TryCreate(referer, UriKind.Absolute, out var uri))
-                                {
-                                    schema = uri.Scheme; // Lấy schema (http hoặc https) của frontend
-                                    host = uri.Host; // Lấy host của frontend
-                                    callbackUrl = schema + "://" + host + Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, code = code });
-                                }
-                                if (callbackUrl.Equals(""))
-                                {
-                                    callbackUrl = "https://localhost:5001/" + Url.Action("ConfirmEmail", "Auth", new { userId = user.Id, code = code });
-                                }
-
-                               // await _auth.SendEmailConfirmAsync(model.Email.Trim(), callbackUrl);
-                                return Ok("Đăng ký tài khoản WarehouseBridge thành công. Vui lòng kiểm tra email để kích hoạt tài khoản!");
-                            }
-                            else
-                            {
-                                return BadRequest(temp);
-                            }
-                        }
-                        else
-                        {
-                            ErrorViewModel errors = new ErrorViewModel();
-                            errors.Errors = new List<string>();
-                            errors.Errors.AddRange(result.Errors.Select(x => x.ErrorMessage));
-                            return BadRequest(errors);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        return NotFound(ex.Message);
-                    }*/
-                    return NotFound("Tên đăng nhập này đã được sử dụng!");
-                }
-                else
-                {
-                    return NotFound("Tên đăng nhập này đã được sử dụng!");
-                }
+                    status = BadRequest().StatusCode,
+                    title = "Đăng ký tài khoản Thanh Sơn Garden thành công. Vui lòng kiểm tra email để kích hoạt tài khoản!"
+                });
             }
-            else
+            catch (ValidationException ex)
             {
-                return NotFound("Email này đã được sử dụng!");
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = "Đã xảy ra 1 hoặc vài lỗi xác thực.",
+                    validateError = ex.Errors
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = ex.Message
+                });
             }
         }
 
@@ -155,13 +130,21 @@ namespace WebAPI.Controllers
         {
             if (userId == null || code == null)
             {
-                return BadRequest("Xác nhận Email không thành công! Link xác nhận không chính xác ! Vui lòng sử dụng đúng link được gửi từ WarehouseBridge tới Email của bạn!");
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = "Xác nhận Email không thành công! Link xác nhận không chính xác ! Vui lòng sử dụng đúng link được gửi từ WarehouseBridge tới Email của bạn!"
+                });
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return BadRequest("Xác nhận Email không thành công! Link xác nhận không chính xác! Vui lòng sử dụng đúng link được gửi từ WarehouseBridge tới Email của bạn!");
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = "Xác nhận Email không thành công! Link xác nhận không chính xác! Vui lòng sử dụng đúng link được gửi từ WarehouseBridge tới Email của bạn!"
+                });
             }
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
@@ -169,19 +152,26 @@ namespace WebAPI.Controllers
             string StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
             if (result.Succeeded)
             {
-                return Ok("Xác nhận Email thành công!Bây giờ bạn có thể đăng nhập vào tài khoản của mình bằng Email hoặc Username vừa xác thực !");
+                return Ok(new
+                {
+                    status = Ok().StatusCode,
+                    title = "Xác nhận Email thành công!Bây giờ bạn có thể đăng nhập vào tài khoản của mình bằng Email hoặc Username vừa xác thực !"
+                });
             }
             else
             {
-                return BadRequest("Xác nhận Email không thành công! Link xác nhận không chính xác hoặc đã hết hạn! Vui lòng sử dụng đúng link được gửi từ WarehouseBridge tới Email của bạn!");
-
+                return BadRequest(new
+                {
+                    status = BadRequest().StatusCode,
+                    title = "Xác nhận Email không thành công! Link xác nhận không chính xác hoặc đã hết hạn! Vui lòng sử dụng đúng link được gửi từ WarehouseBridge tới Email của bạn!"
+                });
             }
         }
 
         [NonAction]
         public async Task<string> GetCallbackUrlAsync(ApplicationUser user, string referer, string type)
         {
-           
+
             string callbackUrl = "";
             string schema;
             string host;
