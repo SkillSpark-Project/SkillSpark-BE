@@ -39,6 +39,7 @@ namespace Infrastructures
             services.AddScoped<IRequirementRepository, RequirementRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IFirebaseService, FirebaseService>();
 
             services.AddSingleton<ICurrentTime, CurrentTime>();
             services.AddDbContext<AppDbContext>(options =>
