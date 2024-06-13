@@ -12,6 +12,8 @@ namespace Domain.Entities
     {
         [ForeignKey("Category")]
         public Guid CategoryId { get; set; }
+        [ForeignKey("Mentor")]
+        public Guid MentorId { get; set; }
         public string Name { get; set; }
         public string Image {  get; set; }
         public string Description { get; set; }
@@ -20,6 +22,8 @@ namespace Domain.Entities
         public int NumberLearner { get; set; } = 0;
         public string ShortDescripton { get; set; }
         public virtual Category Category { get; set; }
+        public virtual Mentor Mentor { get; set; }
+
 
     }
 }

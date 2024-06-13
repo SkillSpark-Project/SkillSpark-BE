@@ -19,6 +19,7 @@ namespace Domain.Entities
         public virtual ApplicationUser ApplicationUser { get; set; }
         public virtual Identication? Identication { get; set; }
         public virtual BankInformation? BankInformation { get; set; }
+        public IList<Course> Courses { get; set; }
 
     }
 }

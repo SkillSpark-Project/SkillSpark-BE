@@ -25,6 +25,9 @@ namespace Infrastructures
             services.AddScoped<ILearnerService, LearnerService>();
             services.AddScoped<IMentorService, MentorService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ICourseService, CourseService>();
+            services.AddScoped<IContentService, ContentService>();
+            services.AddScoped<IRequirementService, RequirementService>();
 
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -32,6 +35,8 @@ namespace Infrastructures
             services.AddScoped<ITagRepository, TagRepository>();
             services.AddScoped<ILearnerRepository, LearnerRepository>();
             services.AddScoped<IMentorRepository, MentorRepository>();
+            services.AddScoped<IContentRepository, ContentRepository>();
+            services.AddScoped<IRequirementRepository, RequirementRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
