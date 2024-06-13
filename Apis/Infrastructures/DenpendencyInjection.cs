@@ -25,15 +25,20 @@ namespace Infrastructures
             services.AddScoped<ILearnerService, LearnerService>();
             services.AddScoped<IMentorService, MentorService>();
             services.AddScoped<IAuthService, AuthService>();
-
+            services.AddScoped<IRequirementService, RequirementService>();
+            services.AddScoped<IContentService, ContentService>();
+            services.AddScoped<ICourseService, CourseService>();
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICourseRepository, CourseRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
             services.AddScoped<ILearnerRepository, LearnerRepository>();
             services.AddScoped<IMentorRepository, MentorRepository>();
+            services.AddScoped<IContentRepository, ContentRepository>();
+            services.AddScoped<IRequirementRepository, RequirementRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddSingleton< FirebaseService>();
 
             services.AddSingleton<ICurrentTime, CurrentTime>();
             services.AddDbContext<AppDbContext>(options =>

@@ -19,13 +19,14 @@ namespace Infrastructures
 
         }
         public DbSet<Category> Category { get; set; }
-        public DbSet<Course> Course { get; set; }
         public DbSet<Tag> Tag { get; set; }
         public DbSet<CourseTag> CourseTag { get; set; }
         public DbSet<Chapter> Chapter { get; set; }
         public DbSet<Lesson> Lesson { get; set; }
         public DbSet<Learner> Learner { get; set; }
         public DbSet<Mentor> Mentor { get; set; }
+        public DbSet<Course> Course { get; set; }
+
         public DbSet<Identication> Identication { get; set; }
         public DbSet<BankInformation> BankInformation { get; set; }
         public DbSet<ConnectionType> ConnectionType { get; set; }
