@@ -5,6 +5,7 @@ using Domain.Entities;
 using Application.ViewModels.CategoryViewModels.Requests;
 using Application.ViewModels.TagViewModels;
 using Application.ViewModels.MentorViewModels.Requests;
+using Application.ViewModels.CourseViewModels.Requests;
 
 namespace Infrastructures.Mappers
 {
@@ -16,6 +17,8 @@ namespace Infrastructures.Mappers
             CreateMap<CategoryModel, Category>().ReverseMap();
             CreateMap<TagModel, Tag>().ReverseMap();
             CreateMap<MentorModel, Mentor>().ReverseMap();
+            CreateMap<CourseModel, Course>().ReverseMap();
+
 
             /*             CreateMap<Chemical, ChemicalViewModel>()
                  .ForMember(dest => dest._Id, src => src.MapFrom(x => x.Id));*/

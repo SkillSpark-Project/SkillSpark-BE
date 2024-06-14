@@ -28,6 +28,8 @@ namespace Infrastructures
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IContentService, ContentService>();
             services.AddScoped<IRequirementService, RequirementService>();
+            services.AddScoped<IUserService, UserService>();
+
 
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
