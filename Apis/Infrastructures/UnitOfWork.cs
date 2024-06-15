@@ -17,12 +17,13 @@ namespace Infrastructures
         private readonly ILearnerRepository _learnerRepository;
         private readonly IContentRepository _contentRepository;
         private readonly IRequirementRepository _requirementRepository;
+        private readonly ICourseTagRepository _courseTagRepository;
         private IDbContextTransaction _transaction;
 
 
         public UnitOfWork(AppDbContext dbContext, ICategoryRepository categoryRepository, ICourseRepository courseRepository,
             ITagRepository tagRepository, IMentorRepository mentorRepository, ILearnerRepository learnerRepository,
-            IContentRepository contentRepository , IRequirementRepository requirementRepository
+            IContentRepository contentRepository , IRequirementRepository requirementRepository, ICourseTagRepository courseTagRepository
          )
         {
             _dbContext = dbContext;
@@ -33,6 +34,7 @@ namespace Infrastructures
             _learnerRepository = learnerRepository;
             _contentRepository = contentRepository;
             _requirementRepository = requirementRepository;
+            _courseTagRepository = courseTagRepository;
         }
         public ICategoryRepository CategoryRepository => _categoryRepository;
         public ICourseRepository CourseRepository => _courseRepository;
@@ -43,6 +45,8 @@ namespace Infrastructures
         public IContentRepository ContentRepository => _contentRepository;
 
         public IRequirementRepository RequirementRepository => _requirementRepository;
+
+        public ICourseTagRepository CourseTagRepository => _courseTagRepository;
 
         public async Task<int> SaveChangeAsync()
         {

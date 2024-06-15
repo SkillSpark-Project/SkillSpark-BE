@@ -2,10 +2,7 @@
 using Application.Interfaces;
 using Application.Repositories;
 using Application.Services;
-using Application.Validations.Auths;
-using Application.ViewModels.AuthViewModel;
 using Domain.Entities;
-using FluentValidation;
 using Infrastructures.Mappers;
 using Infrastructures.Repositories;
 using Microsoft.AspNetCore.Hosting;
@@ -30,8 +27,6 @@ namespace Infrastructures
             services.AddScoped<IRequirementService, RequirementService>();
             services.AddScoped<IUserService, UserService>();
 
-
-
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICourseRepository, CourseRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
@@ -39,6 +34,7 @@ namespace Infrastructures
             services.AddScoped<IMentorRepository, MentorRepository>();
             services.AddScoped<IContentRepository, ContentRepository>();
             services.AddScoped<IRequirementRepository, RequirementRepository>();
+            services.AddScoped<ICourseTagRepository, CourseTagRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IFirebaseService, FirebaseService>();
@@ -49,17 +45,10 @@ namespace Infrastructures
                         builder => builder.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
             services.AddIdentity<ApplicationUser, IdentityRole>().AddDefaultTokenProviders().AddEntityFrameworkStores<AppDbContext>();
-
             services.AddAutoMapper(typeof(MapperConfigurationsProfile));
             services.Configure<IdentityOptions>(options => options.SignIn.RequireConfirmedEmail = true);
-
-            
-
-
-
             return services;
         }
-
         private static string GetConnection(IConfiguration configuration, IWebHostEnvironment env)
         {
 #if DEVELOPMENT

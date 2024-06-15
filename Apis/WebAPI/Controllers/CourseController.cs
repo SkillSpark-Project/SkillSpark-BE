@@ -21,8 +21,9 @@ namespace WebAPI.Controllers
             _courseService = courseService;
             _claimsService = claimsService;
         }
+
         [HttpPost]
-        [Authorize(Roles ="Mentor")]
+        [Authorize(Roles = "Mentor")]
         public async Task<IActionResult> PostAsync([FromForm] CourseModel model)
         {
             try
@@ -42,7 +43,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("Filter")]
-        public async Task<IActionResult> GetAsync([FromForm]FilterModel model)
+        public async Task<IActionResult> GetAsync([FromForm] FilterModel model)
         {
             try
             {

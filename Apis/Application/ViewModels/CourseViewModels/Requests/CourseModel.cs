@@ -15,6 +15,7 @@ namespace Application.ViewModels.CourseViewModels.Requests
         public string Description { get; set; }
         public string ShortDescripton { get; set; }
         public IList<string> Requirements { get; set; }
+        public IList<Guid> Tags { get; set; }
         public IList<string> Contents { get; set; }
     }
 }

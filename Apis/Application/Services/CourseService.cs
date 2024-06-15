@@ -64,6 +64,7 @@ namespace Application.Services
                 await _unit.SaveChangeAsync();
                 await AddRangeContents(model.Contents, course.Id);
                 await AddRangeReqs(model.Requirements, course.Id);
+                await AddRangeTags(model.Tags, course.Id);
                 await _unit.CommitTransactionAsync();
             }
             catch (Exception ex)
@@ -94,6 +95,18 @@ namespace Application.Services
                 list.Add(req);
             }
             await _unit.ContentRepository.AddRangeAsync(list);
+            await _unit.SaveChangeAsync();
+        }
+
+        private async Task AddRangeTags(IList<Guid> tags, Guid courseId)
+        {
+            var list = new List<CourseTag>();
+            foreach (var item in tags.Distinct())
+            {
+                var tag = new CourseTag { CourseId = courseId, TagId = item };
+                list.Add(tag);
+            }
+            await _unit.CourseTagRepository.AddRangeAsync(list);
             await _unit.SaveChangeAsync();
         }
 

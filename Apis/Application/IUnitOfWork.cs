@@ -11,6 +11,7 @@ namespace Application
         public IMentorRepository MentorRepository { get; }
         public IContentRepository ContentRepository { get; }
         public IRequirementRepository RequirementRepository { get; }
+        public ICourseTagRepository CourseTagRepository { get; }
 
         public Task<int> SaveChangeAsync();
         public void BeginTransaction();
