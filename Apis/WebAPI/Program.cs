@@ -97,7 +97,7 @@ using (var scope = app.Services.CreateScope())
 
 using (var scope = app.Services.CreateScope())
 {
-    var administrator = new ApplicationUser { UserName = "admin@localhost", Email = "admin@localhost", Fullname = "Admin", Avatar = "(null)", Birthday = DateTime.Parse("2000-01-01") };
+    var administrator = new ApplicationUser { UserName = "admin@localhost", Email = "admin@localhost", Fullname = "Admin", Avatar = "(null)", Birthday = DateTime.Parse("2000-01-01") , EmailConfirmed = true };
     var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     if (_userManager.Users.All(u => u.UserName != administrator.UserName))
     {

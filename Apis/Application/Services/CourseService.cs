@@ -1,8 +1,11 @@
-﻿using Application.Interfaces;
+﻿using Application.Commons;
+using Application.Interfaces;
 using Application.ViewModels.CourseViewModels.Requests;
+using Application.ViewModels.CourseViewModels.Responses;
 using AutoMapper;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,6 +54,7 @@ namespace Application.Services
             if (mentor == null) throw new Exception("Không tìm thấy thông tin giảng viên");
             var course = _mapper.Map<Course>(model);
             course.MentorId = mentor.Id;
+            course.Id = Guid.NewGuid();
             var url = await AddCourseImage(course.Id, model.Image);
             course.Image = url;
             _unit.BeginTransaction();
@@ -91,6 +95,38 @@ namespace Application.Services
             }
             await _unit.ContentRepository.AddRangeAsync(list);
             await _unit.SaveChangeAsync();
+        }
+
+        public async Task<Pagination<Course>> GetList(FilterModel model)
+        {
+            var list = await _unit.CourseRepository.GetAllQueryable().Include(x=>x.Category).Include(x=>x.Mentor.ApplicationUser).ToListAsync();
+            if (model.Keyword != null) list.Where(x => x.NameUnsign.ToLower().Contains(model.Keyword.ToLower()));
+            if (model.MinPrice != null) list = list.Where(x => x.Price.Value >= model.MinPrice).ToList();
+            if (model.MaxPrice != null) list = list.Where(x => x.Price.Value <= model.MaxPrice).ToList();
+            if (model.CategoryId != null) list =  list.Where(x => x.CategoryId == model.CategoryId).ToList();
+            var items = list.Skip(model.IndexPage * model.PageSize)
+                                    .Take(model.PageSize)
+                                    .ToList();
+            var result = new Pagination<Course>()
+            {
+                PageIndex = model.IndexPage,
+                PageSize = model.PageSize,
+                TotalItemsCount = list.Count,
+                Items = items,
+            };
+            return result;
+        }
+
+        public async Task<Course> GetById(Guid id)
+        {
+            var course = await _unit.CourseRepository.GetAllQueryable().Include(x => x.Category)
+                .Include(x => x.Mentor.ApplicationUser)
+                .Include(x=>x.Contents)
+                .Include(x => x.Requirements)
+                .Include(x => x.CourseTags).ThenInclude(x=>x.Tag)
+                .FirstOrDefaultAsync(x=>x.Id == id);
+            if (course == null) throw new Exception("Không tìm thấy khóa học.");
+            return course;
         }
     }
 }

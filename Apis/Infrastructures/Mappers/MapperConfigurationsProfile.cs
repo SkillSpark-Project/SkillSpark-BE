@@ -6,6 +6,7 @@ using Application.ViewModels.CategoryViewModels.Requests;
 using Application.ViewModels.TagViewModels;
 using Application.ViewModels.MentorViewModels.Requests;
 using Application.ViewModels.CourseViewModels.Requests;
+using Application.ViewModels.UserViewModels.Responses;
 
 namespace Infrastructures.Mappers
 {
@@ -18,6 +19,7 @@ namespace Infrastructures.Mappers
             CreateMap<TagModel, Tag>().ReverseMap();
             CreateMap<MentorModel, Mentor>().ReverseMap();
             CreateMap<CourseModel, Course>().ReverseMap();
+            CreateMap<UserViewModel, ApplicationUser>().ReverseMap();
 
 
             /*             CreateMap<Chemical, ChemicalViewModel>()

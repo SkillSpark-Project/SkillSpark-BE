@@ -14,7 +14,7 @@ namespace Application.ViewModels.AuthViewModel
         public string Email { get; set; }
         public string? Avatar { get; set; }
 
-        public string Token { get; set; }
+        public string? Token { get; set; }
         public List<string> listRoles { get; set; }
     }
 }

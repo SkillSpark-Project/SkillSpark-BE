@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Domain.Entities
@@ -19,6 +20,7 @@ namespace Domain.Entities
         public virtual ApplicationUser ApplicationUser { get; set; }
         public virtual Identication? Identication { get; set; }
         public virtual BankInformation? BankInformation { get; set; }
+        [JsonIgnore]
         public IList<Course> Courses { get; set; }
 
     }

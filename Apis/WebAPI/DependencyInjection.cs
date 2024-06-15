@@ -1,6 +1,9 @@
 ﻿using Application.Interfaces;
 using Application.Validations.Auths;
 using Application.Validations.Categories;
+using Application.Validations.CourseValidations;
+using Application.Validations.Mentors;
+using Application.Validations.Users;
 using Application.ViewModels.AuthViewModel;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -31,6 +34,10 @@ namespace WebAPI
             services.AddFluentValidationClientsideAdapters();
             services.AddValidatorsFromAssemblyContaining<RegisterModelValidator>();
             services.AddValidatorsFromAssemblyContaining<CategoryModelValidator>();
+            services.AddValidatorsFromAssemblyContaining<UserModelValidator>();
+            services.AddValidatorsFromAssemblyContaining<MentorModelValidator>();
+            services.AddValidatorsFromAssemblyContaining<CourseModelValidator>();
+
 
 
             services.AddSwaggerGen(options =>
