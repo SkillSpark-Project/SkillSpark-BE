@@ -13,5 +13,6 @@ namespace Domain.Entities
         public Guid CourseId { get; set; }
         public string Name { get; set; }
         public virtual Course Course { get; set; }
+        public IList<Lesson> Lessons { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+﻿using Domain.Enums;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -52,13 +53,12 @@ namespace Domain.Entities
         public double? Price { get; set; }
         public int NumberLearner { get; set; } = 0;
         public string ShortDescripton { get; set; }
+        public CourseStatus CourseStatus { get; set; } = CourseStatus.Preparing;
+
         public virtual Category Category { get; set; }
         public virtual Mentor Mentor { get; set; }
         public IList<Content> Contents { get; set; }
         public IList<Requirement> Requirements { get; set; }
         public IList<CourseTag> CourseTags { get; set; }
-
-
-
     }
 }

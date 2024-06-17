@@ -1,11 +1,8 @@
 ﻿using Application.Interfaces;
-using Application.Services;
 using Application.ViewModels.CourseViewModels.Requests;
 using Application.ViewModels.CourseViewModels.Responses;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebAPI.Services;
 
 namespace WebAPI.Controllers
 {

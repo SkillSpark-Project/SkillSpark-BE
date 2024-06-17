@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Application.Validations.Auths;
 using Application.Validations.Categories;
+using Application.Validations.Chapters;
 using Application.Validations.CourseValidations;
 using Application.Validations.Mentors;
 using Application.Validations.Users;
@@ -37,6 +38,7 @@ namespace WebAPI
             services.AddValidatorsFromAssemblyContaining<UserModelValidator>();
             services.AddValidatorsFromAssemblyContaining<MentorModelValidator>();
             services.AddValidatorsFromAssemblyContaining<CourseModelValidator>();
+            services.AddValidatorsFromAssemblyContaining<ChapterModelValidator>();
 
 
 

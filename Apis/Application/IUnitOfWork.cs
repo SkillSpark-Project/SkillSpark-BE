@@ -12,6 +12,7 @@ namespace Application
         public IContentRepository ContentRepository { get; }
         public IRequirementRepository RequirementRepository { get; }
         public ICourseTagRepository CourseTagRepository { get; }
+        public IChapterRepository ChapterRepository { get; }
 
         public Task<int> SaveChangeAsync();
         public void BeginTransaction();
