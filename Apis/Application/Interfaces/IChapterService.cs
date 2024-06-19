@@ -12,11 +12,11 @@ namespace Application.Interfaces
     {
         public Task<IList<Chapter>> GetChapters();
 
-        public Task AddChapter(ChapterModel model);
+        public Task AddChapter(ChapterModel model, string userId);
 
-        public Task UpdateChapter(Guid id, ChapterModel model);
+        public Task UpdateChapter(Guid id, ChapterModel model, string userId);
 
-        public Task DeleteChapter(Guid id);
+        public Task DeleteChapter(Guid id, string userId);
 
     }
 }

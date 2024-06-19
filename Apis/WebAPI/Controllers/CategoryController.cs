@@ -64,7 +64,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpPost]
-        //[Authorize(Roles = "Manager")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Post([FromBody] CategoryModel categoryModel)
         {
             try
@@ -82,7 +82,8 @@ namespace WebAPI.Controllers
             return Ok("Tạo mới thành công");
         }
         [HttpPut("{id}")]
-        //[Authorize(Roles = "Manager")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] CategoryModel categoryModel)
         {
             try
@@ -100,7 +101,8 @@ namespace WebAPI.Controllers
             return Ok("Cập nhật thành công");
         }
         [HttpDelete("{id}")]
-        //[Authorize(Roles = "Manager")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             try

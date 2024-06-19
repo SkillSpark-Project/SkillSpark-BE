@@ -3,12 +3,14 @@ using Application.Validations.Auths;
 using Application.Validations.Categories;
 using Application.Validations.Chapters;
 using Application.Validations.CourseValidations;
+using Application.Validations.Lessons;
 using Application.Validations.Mentors;
 using Application.Validations.Users;
 using Application.ViewModels.AuthViewModel;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using System.Diagnostics;
@@ -39,8 +41,9 @@ namespace WebAPI
             services.AddValidatorsFromAssemblyContaining<MentorModelValidator>();
             services.AddValidatorsFromAssemblyContaining<CourseModelValidator>();
             services.AddValidatorsFromAssemblyContaining<ChapterModelValidator>();
+            services.AddValidatorsFromAssemblyContaining<LessonModelValidator>();
 
-
+            
 
             services.AddSwaggerGen(options =>
             {

@@ -136,7 +136,10 @@ namespace Application.Services
                 .Include(x => x.Mentor.ApplicationUser)
                 .Include(x=>x.Contents)
                 .Include(x => x.Requirements)
-                .Include(x => x.CourseTags).ThenInclude(x=>x.Tag)
+                .Include(x => x.CourseTags)
+                .ThenInclude(x=>x.Tag)
+                .Include(x=>x.Chapter)
+                .ThenInclude(x=>x.Lessons)
                 .FirstOrDefaultAsync(x=>x.Id == id);
             if (course == null) throw new Exception("Không tìm thấy khóa học.");
             return course;

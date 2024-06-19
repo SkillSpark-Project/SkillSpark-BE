@@ -8,6 +8,6 @@ namespace Domain.Enums
 {
     public enum CourseStatus
     {
-        Preparing = 1, Publish = 2, Unpublish = 3,
+        Preparing = 1, Publish = 2, Unpublish = 3, Requesting = 4, Canceled = 5
     }
 }

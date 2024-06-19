@@ -53,6 +53,8 @@ namespace Domain.Entities
         public double? Price { get; set; }
         public int NumberLearner { get; set; } = 0;
         public string ShortDescripton { get; set; }
+        public string? CancelReason { get; set; }
+
         public CourseStatus CourseStatus { get; set; } = CourseStatus.Preparing;
 
         public virtual Category Category { get; set; }
@@ -60,5 +62,9 @@ namespace Domain.Entities
         public IList<Content> Contents { get; set; }
         public IList<Requirement> Requirements { get; set; }
         public IList<CourseTag> CourseTags { get; set; }
+        public IList<Chapter> Chapter { get; set; }
+        
+
+
     }
 }

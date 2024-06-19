@@ -28,11 +28,15 @@ namespace Application.Services
             var chapters = await _unitOfWork.ChapterRepository.GetAllQueryable().ToListAsync();
             return chapters;
         }
-        public async Task AddChapter(ChapterModel model)
+        public async Task AddChapter(ChapterModel model, string userId)
         {
-            var couse = await _unitOfWork.CourseRepository.GetByIdAsync(model.CourseId);
+            var mentor = await _unitOfWork.MentorRepository.GetAllQueryable().FirstOrDefaultAsync(x => x.UserId.ToLower().ToString() == userId.ToLower().ToString());
+            if (mentor == null) throw new Exception("Bạn không có quyền thực hiện tính năng này.");
+            var couse = await _unitOfWork.CourseRepository.GetAllQueryable().Include(x=>x.Chapter).FirstOrDefaultAsync(x=>x.Id == model.CourseId);
             if (couse is null) throw new Exception("Không tìm thấy khóa học bạn yêu cầu.");
+            if (couse.MentorId != mentor.Id) throw new Exception("Bạn không có quyền thực hiện tính năng này.");
             var chapter = _mapper.Map<Chapter>(model);
+            chapter.SortNumber = couse.Chapter.Count() + 1;
             await CheckName(model, null);
             try
             {
@@ -49,10 +53,13 @@ namespace Application.Services
             var category = await _unitOfWork.CategoryRepository.GetByIdAsync(id);
             return category;
         }
-        public async Task UpdateChapter(Guid id, ChapterModel model)
+        public async Task UpdateChapter(Guid id, ChapterModel model, string userId)
         {
+            var mentor = await _unitOfWork.MentorRepository.GetAllQueryable().FirstOrDefaultAsync(x => x.UserId.ToLower().ToString() == userId.ToLower().ToString());
+            if (mentor == null) throw new Exception("Bạn không có quyền thực hiện tính năng này.");
             var couse = await _unitOfWork.CourseRepository.GetByIdAsync(model.CourseId);
             if (couse is null) throw new Exception("Không tìm thấy khóa học bạn yêu cầu.");
+            if (couse.MentorId != mentor.Id) throw new Exception("Bạn không có quyền thực hiện tính năng này.");
             var chapter = _mapper.Map<Chapter>(model);
             chapter.Id = id;
             var result = await _unitOfWork.ChapterRepository.GetByIdAsync(chapter.Id);
@@ -61,7 +68,6 @@ namespace Application.Services
             await CheckName(model, id);
             try
             {
-
                 _unitOfWork.ChapterRepository.Update(chapter);
                 await _unitOfWork.SaveChangeAsync();
             }
@@ -70,9 +76,12 @@ namespace Application.Services
                 throw new Exception("Đã xảy ra lỗi trong quá trình cập nhật. Vui lòng thử lại!");
             }
         }
-        public async Task DeleteChapter(Guid id)
+        public async Task DeleteChapter(Guid id, string userId)
         {
-            var result = await _unitOfWork.ChapterRepository.GetAllQueryable().Include(x=>x.Lessons).AsNoTracking().FirstOrDefaultAsync(x=>x.Id == id && !x.IsDeleted);
+            var result = await _unitOfWork.ChapterRepository.GetAllQueryable().Include(x => x.Lessons).Include(s => s.Course.Mentor).AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+            var mentor = await _unitOfWork.MentorRepository.GetAllQueryable().FirstOrDefaultAsync(x => x.UserId.ToLower().ToString() == userId.ToLower().ToString());
+            if (mentor == null) throw new Exception("Bạn không có quyền thực hiện tính năng này.");
+            if (mentor.Id != result.Course.MentorId) throw new Exception("Bạn không có quyền thực hiện tính năng này.");
             if (result == null)
                 throw new Exception("Không tìm thấy!");
             if (result.Lessons.Count >= 0)
@@ -98,7 +107,8 @@ namespace Application.Services
                 throw new Exception("Tên chương này đã tồn tại!");
             if (id != null)
             {
-                if (categories.Any() && categories.First().Id != id)
+                var temp = categories.FirstOrDefault(x => x.Id != id);
+                if (temp != null)
                     throw new Exception("Tên chương này đã tồn tại!");
             }
         }

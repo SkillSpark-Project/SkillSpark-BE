@@ -27,6 +27,8 @@ namespace Infrastructures
             services.AddScoped<IRequirementService, RequirementService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IChapterService, ChapterService>();
+            services.AddScoped<ILessonService, LessonService>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<ICourseRepository, CourseRepository>();
@@ -37,6 +39,8 @@ namespace Infrastructures
             services.AddScoped<IRequirementRepository, RequirementRepository>();
             services.AddScoped<ICourseTagRepository, CourseTagRepository>();
             services.AddScoped<IChapterRepository, ChapterRepository>();
+            services.AddScoped<ILessonRepository, LessonRepository>();
+            services.AddScoped<IDocumentRepository, DocumentRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IFirebaseService, FirebaseService>();
