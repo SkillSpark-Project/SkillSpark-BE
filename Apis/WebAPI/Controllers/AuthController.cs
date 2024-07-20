@@ -39,8 +39,6 @@ namespace WebAPI.Controllers
             _configuration = configuration;
             _environment = environment;
         }
-        [HttpPost]
-        [Route("/Login")]
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
